@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>支付查询加密</title>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="https://cdn.bootcss.com/crypto-js/3.1.9/core.min.js"></script>
+<script src="https://cdn.bootcss.com/crypto-js/3.1.9/md5.min.js"></script>
+<script src="https://cdn.bootcss.com/jsencrypt/3.0.0-rc.1/jsencrypt.min.js"></script>
+<script src="http://www-cs-students.stanford.edu/~tjw/jsbn/base64.js"></script>
+</head>
+<body>
+<form id="form">
+	商户号:<input type="text" name="merNo" value=""/><br><br>
+	商户密钥:<input type="text" id="secretKey" value=""/><br><br>
+	支付公钥:<input type="text" id="payPublicKey" value=""/><br><br>
+
+	amount:<input type="text" name="amount" value=""/><br><br>
+	goodsName:<input type="text" name="goodsName" value=""/><br><br>
+	netway:<input type="text" name="netway" value=""/><br><br>
+	orderNum:<input type="text" name="orderNum" value=""/><br><br>
+	payDate:<input type="text" name="payDate" value=""/><br><br>
+
+	version:<input type="text" name="version" value="V3.1.0.0"/><br><br>
+	<input type="hidden" name="charset" value="UTF-8"/><br>
+</form>
+<button onclick="encrypt();">加密</button><br><br>
+加密结果:<textarea id="data" cols="50" rows="7"></textarea>
+<script>
+function encrypt() {
+	var data = $('#form').serializeObject();
+
+
+	var signData = {
+		'amount' : data['amount'],
+		'goodsName' : data['goodsName'],
+		'merNo' : data['merNo'],
+		'netway' : data['netway'],
+		'orderNum' : data['orderNum'],
+		'payDate' : data['payDate']
+	};
+
+	var sign = CryptoJS.MD5(JSON.stringify(signData) + $('#secretKey').val()).toString().toUpperCase()
+	signData['sign'] = sign;
+
+	var enc = new JSEncrypt();
+	enc.setPublicKey($('#payPublicKey').val());
+	$('#data').val(encodeURIComponent(enc.encryptLong(JSON.stringify(signData))));
+}
+
+$.fn.serializeObject = function() {
+	var o = {};
+	var a = this.serializeArray();
+	$.each(a, function() {
+		if (o[this.name] !== undefined) {
+			if (!o[this.name].push) {
+				o[this.name] = [o[this.name]];
+			}
+			o[this.name].push(this.value || '');
+		} else {
+			o[this.name] = this.value || '';
+		}
+	});
+	return o;
+};
+
+
+JSEncrypt.prototype.encryptLong = function(string) {
+	var k = this.getKey();
+	try {
+		var lt = "";
+		var ct = "";
+		//RSA每次加密117bytes，需要辅助方法判断字符串截取位置
+		//1.获取字符串截取点
+		var bytes = new Array();
+		bytes.push(0);
+		var byteNo = 0;
+	    var len,c;
+	    len = string.length;
+	    var temp = 0;
+	    for(var i = 0; i < len; i++){
+	        c = string.charCodeAt(i);
+	        if(c >= 0x010000 && c <= 0x10FFFF){
+	        	byteNo += 4;
+	        }else if(c >= 0x000800 && c <= 0x00FFFF){
+	        	byteNo += 3;
+	        }else if(c >= 0x000080 && c <= 0x0007FF){
+	        	byteNo += 2;
+	        }else{
+	        	byteNo += 1;
+	        }
+	        if((byteNo % 117) >= 114 || (byteNo % 117) == 0){
+	        	if(byteNo-temp >= 114){
+	        		bytes.push(i);
+	        		temp = byteNo;
+	        	}
+	        }
+	    }
+		//2.截取字符串并分段加密
+	    if(bytes.length > 1){
+	    	for(var i=0;i< bytes.length-1; i++){
+	    		var str;
+	    		if(i == 0){
+	    			str = string.substring(0,bytes[i+1]+1);
+	    		}else{
+	    			str = string.substring(bytes[i]+1,bytes[i+1]+1);
+	    		}
+	    		var t1 = k.encrypt(str);
+	    		ct += t1;
+	    	};
+	    	if(bytes[bytes.length-1] != string.length-1){
+	    		var lastStr = string.substring(bytes[bytes.length-1]+1);
+	    		ct += k.encrypt(lastStr);
+	    	}
+	    	return hex2b64(ct);
+	    }
+		var t = k.encrypt(string);
+		var y = hex2b64(t);
+		return y;
+	} catch (ex) {
+		return false;
+	}
+};
+</script>
+</body>
+</html>

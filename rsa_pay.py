@@ -5,19 +5,15 @@ from Crypto.Cipher import PKCS1_v1_5 as Cipher_pkcs1_v1_5
 from Crypto.PublicKey import RSA
 import base64
 import requests
-from base64 import b64encode, b64decode
-import rsa
 from urllib.parse import quote
 from md5_jtpy import md_jtpy
 
 def rsa_encrypt(msg,pubkey):
-    pub_title = pubkey
-    pubkey_str ='-----BEGIN PUBLIC KEY-----' + '\n' + pub_title + '\n' + '-----END PUBLIC KEY-----'
     msg = md_jtpy().encode(encoding="utf-8")
     length = len(msg)
     default_length = 117
     #公钥加密
-    pubobj = Cipher_pkcs1_v1_5.new(RSA.importKey(pubkey_str))
+    pubobj = Cipher_pkcs1_v1_5.new(RSA.importKey(pubkey))
     # 长度不用分段
     if length < default_length:
         encry_text = base64.b64encode(pubobj.encrypt(msg))
@@ -35,25 +31,22 @@ def rsa_encrypt(msg,pubkey):
     return base64.b64encode(res).decode('utf-8')
 
 if __name__ == '__main__':
-    pubkey='MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC9iQ3LlgE7ZiGipcPJwc9HUGhKQY' \
-            'r0qt7TxT7Jw++4MEedoFsYlpR4/rHf6k3Gb46ZAjM98bcK5BeCC2vdwpQDU+uQfnkB' \
-             'b8fhrRG+KOUmDfu8rvgHNw1tariNNFhx2ArG2QumSzqe08DIBTyit653xamapmKXBX' \
-             'suOYA/VTmC7QIDAQAB'
-    msg = md_jtpy()
-    print(msg)
-    request_url = 'http://api-test.jiutongpay.com.cn/api/pay.action'
-    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-    a = rsa_encrypt(msg,pubkey)
-    b = quote(a,'utf-8')
-    request_data = "data="+b+"&merchNo=JTZF800003&version=V3.1.0.0"
-    c = "".join(request_data)
-    #c = c.encode("utf-8")
-    head = {"Content-Type": "application/x-www-form-urlencoded"}
-    print ('客户端请求JSON报文数据为（客户端 --> 服务端）:\n', c)
-    # 客户端发送请求报文到服务端
-
-    # r = requests.get(request_url + "?" + c, "")
-    for i in range(1):
+    with open('rsa-public.pem') as f:
+        pubkey = f.read()
+    for i in range(10):
+        msg = md_jtpy()
+        print(msg)
+        request_url = 'http://api-test.jiutongpay.com.cn/api/pay.action'
+        # headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        a = rsa_encrypt(msg,pubkey)
+        b = quote(a,'utf-8')
+        request_data = "data="+b+"&merchNo=JTZF800003&version=V3.1.0.0"
+        c = "".join(request_data)
+        #c = c.encode("utf-8")
+        head = {"Content-Type": "application/x-www-form-urlencoded"}
+        print ('客户端请求JSON报文数据为（客户端 --> 服务端）:\n', c)
+        # 客户端发送请求报文到服务端
+        # r = requests.get(request_url + "?" + c, "")
         r = requests.post(request_url, data=request_data, headers=head)
         # 客户端获取服务端的响应报文数据
         responsedata = r.text

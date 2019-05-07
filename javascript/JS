@@ -1,0 +1,21 @@
+//写入 HTML 输出
+document.write("<h1>This is a heading</h1>");
+document.write("<p>This is a paragraph</p>");
+//对事件作出反应
+<button type="button" onClick="alert('Welcome!')">点击这里</button>
+//改变 HTML 内容
+x=document.getElementById("demo")  //查找元素
+x.innerHTML="Hello JavaScript";    //改变内容
+//改变 HTML 图像
+function changeImage()
+{
+    element=document.getElementById('myimage')
+if (element.src.match("bulbon"))
+  {element.src="/i/eg_bulboff.gif";}
+else
+  {element.src="/i/eg_bulbon.gif";}
+}
+
+//改变 HTML 样式
+x=document.getElementById("demo")  //找到元素
+x.style.color="#ff0000";           //改变样式
