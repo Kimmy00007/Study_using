@@ -10,8 +10,8 @@ def  md_jtpy():
     m = hashlib.md5()
     order_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     ordernumber = order_time + ''.join(random.sample('1234567890',9))
-    Req_ser_par ={"amount":"100","bankAccountName":"熊峰","bankAccountNo":"6236682660004282455","bankCode":"CCB","callBackUrl":"http://c57bc06c.ngrok.io/remitCallback","charset":"UTF-8","merNo":"JTZF800003","orderNum":ordernumber,"version":"V3.1.0.0"}
-    signKey = '72977756EF09F52B8A272AEC19A478C6'
+    Req_ser_par ={}
+    signKey = ''
     parmars = json.dumps(Req_ser_par,separators=(',',':'),ensure_ascii=False) + signKey
     b = parmars.encode('utf-8')
     m.update(b)
