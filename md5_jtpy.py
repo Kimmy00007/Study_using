@@ -10,8 +10,8 @@ def md_jtpy():
     m = hashlib.md5()
     order_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     ordernumber = order_time + ''.join(random.sample('1234567890aceg',6))
-    dict ={"amount":"210","callBackUrl":"http://d1d6aef7.ngrok.io/payCallback","callBackViewUrl":"http://d1d6aef7.ngrok.io/listPayCallbackData","charset":"UTF-8","goodsName":"fish","merNo":"JTZF800003","netway":"E_BANK_CCB","orderNum":ordernumber,"random":"JU47","version":"V3.1.0.0"}
-    signKey = '72977756EF09F52B8A272AEC19A478C6'
+    dict ={}
+    signKey = ''
     parmars = json.dumps(dict,separators=(',',':')) + signKey
     b = parmars.encode('utf-8')
     m.update(b)
