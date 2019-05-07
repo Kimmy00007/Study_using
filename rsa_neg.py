@@ -35,19 +35,16 @@ if __name__ == '__main__':
         pubkey = f.read()
     for i in range(10):
         msg = md_jtpy()
-        request_url = 'http://api-test.jiutongpay.com.cn/api/remit.action'
-        headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+        request_url = ''
+        headers = {'Content-Type': ''}
         a = rsa_encrypt(msg,pubkey)
         b = quote(a,'utf-8')
-        request_data = "data="+b+"&merchNo=JTZF800003&version=V3.1.0.0"
+        request_data = ""
         c = "".join(request_data)
         #c = c.encode("utf-8")
-        head = {"Content-Type": "application/x-www-form-urlencoded"}
+        head = {"Content-Type": ""}
         print ('客户端请求JSON报文数据为（客户端 --> 服务端）:\n', c)
-        # 客户端发送请求报文到服务端
-        # r = requests.get(request_url + "?" + c, "")
         r = requests.post(request_url, data=request_data, headers=head)
-        # 客户端获取服务端的响应报文数据
         responsedata = r.text
         print ('服务端的响应报文为（客户端 <--服务端）: ', responsedata)
         print ("get the status: ", r.status_code)
